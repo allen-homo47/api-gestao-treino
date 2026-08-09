@@ -1,7 +1,10 @@
 package com.Ginasio.Treinos.Service;
 
 import com.Ginasio.Treinos.Repository.PlanotreinoRepository;
+import com.Ginasio.Treinos.entity.DTO.PlanoTreinoRequestDTO;
+import com.Ginasio.Treinos.entity.DTO.PlanoTreinoresponseDTO;
 import com.Ginasio.Treinos.entity.PlanoTreino;
+import com.Ginasio.Treinos.entity.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,23 +14,37 @@ public class PlanoTreinoService {
 
     private final PlanotreinoRepository planotreinoRepository;
 
-    public PlanoTreino criarPlano(PlanoTreino planoTreino){
+    public PlanoTreinoresponseDTO criarPlano(PlanoTreinoRequestDTO requestDTO){
+        PlanoTreino plano = new PlanoTreino();
+        plano.setNomePlano(requestDTO.nome());
+        plano.setDataInicio(requestDTO.dataInicio());
+        plano.setDataFim(requestDTO.dataFim());
+        planotreinoRepository.save(plano);
 
-        return planotreinoRepository.save(planoTreino);
+        PlanoTreinoresponseDTO responseDTo = new PlanoTreinoresponseDTO(plano.getId(), plano.getNomePlano(), plano.getDataInicio(), plano.getDataFim());
+
+        return responseDTo;
     }
 
-    public PlanoTreino buscarPlano(Long id){
+    public PlanoTreinoresponseDTO buscarPlano(Long id){
 
-        return planotreinoRepository.findById(id).orElseThrow(()->new RuntimeException("Plano nao encontrado"));
+        PlanoTreino plano = planotreinoRepository.findById(id).orElseThrow(()->new RuntimeException("Plano nao encontrado"));
+
+        PlanoTreinoresponseDTO responseDTO = new PlanoTreinoresponseDTO(plano.getId(), plano.getNomePlano(), plano.getDataInicio(), plano.getDataFim());
+        return responseDTO;
     }
 
-    public void actualizarPlano(Long id, PlanoTreino planoNovo){
+    public void actualizarPlano(Long id, PlanoTreinoRequestDTO planoRequest){
 
         PlanoTreino actual = planotreinoRepository.findById(id).orElseThrow(()->new RuntimeException("plano nao encontrado"));
-        actual.setNomePlano(planoNovo.getNomePlano());
-        actual.setDataInicio(planoNovo.getDataInicio());
-        actual.setDataFim(planoNovo.getDataFim());
+        actual.setNomePlano(planoRequest.nome());
+        actual.setDataInicio(planoRequest.dataInicio());
+        actual.setDataFim(planoRequest.dataFim());
 
         planotreinoRepository.save(actual);
+
+
+
+
     }
 }

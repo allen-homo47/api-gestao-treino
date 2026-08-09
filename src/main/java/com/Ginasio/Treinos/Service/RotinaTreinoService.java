@@ -2,6 +2,8 @@ package com.Ginasio.Treinos.Service;
 
 
 import com.Ginasio.Treinos.Repository.RotinaTreinoRepository;
+import com.Ginasio.Treinos.entity.DTO.RotinaRequestDTO;
+import com.Ginasio.Treinos.entity.DTO.RotinaResponseDTO;
 import com.Ginasio.Treinos.entity.RotinaTreino;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,22 +14,34 @@ public class RotinaTreinoService {
 
     private final RotinaTreinoRepository rotinaTreinoRepository;
 
-    public RotinaTreino criarRotina(RotinaTreino rotinaTreino){
+    public RotinaResponseDTO criarRotina(RotinaRequestDTO rotinaRequest){
 
-       return  rotinaTreinoRepository.save(rotinaTreino);
+        RotinaTreino rotina = new RotinaTreino();
+        rotina.setNome(rotinaRequest.nome());
+        rotina.setDiaSemana(rotinaRequest.diaSemana());
+
+        rotinaTreinoRepository.save(rotina);
+
+        RotinaResponseDTO rotinaResponse = new RotinaResponseDTO(rotina.getId(), rotina.getNome(), rotina.getDiaSemana());
+        return rotinaResponse;
+
     }
 
-    public RotinaTreino buscarRotina(Long id){
+    public RotinaResponseDTO buscarRotina(Long id){
 
         RotinaTreino rotina = rotinaTreinoRepository.findById(id).orElseThrow(()-> new RuntimeException("Rotina nao encontrada"));
-        return rotina;
+        RotinaResponseDTO responseDTO = new RotinaResponseDTO(rotina.getId(), rotina.getNome(), rotina.getDiaSemana());
+        return  responseDTO;
     }
 
-    public RotinaTreino actualizarRotina(Long id, RotinaTreino rotinaNova){
+    public void actualizarRotina(Long id, RotinaRequestDTO requestDTO){
 
         RotinaTreino actual = rotinaTreinoRepository.findById(id).orElseThrow(()-> new RuntimeException("Rotina nao encontrada"));
-        actual.setNome(rotinaNova.getNome());
-        actual.setDiaSemana(rotinaNova.getDiaSemana());
-        return rotinaTreinoRepository.save(actual);
+        actual.setNome(requestDTO.nome());;
+        actual.setDiaSemana(requestDTO.diaSemana());
+
+        rotinaTreinoRepository.save(actual);
+
+
     }
 }

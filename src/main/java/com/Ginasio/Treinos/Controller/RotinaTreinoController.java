@@ -1,6 +1,8 @@
 package com.Ginasio.Treinos.Controller;
 
 import com.Ginasio.Treinos.Service.RotinaTreinoService;
+import com.Ginasio.Treinos.entity.DTO.RotinaRequestDTO;
+import com.Ginasio.Treinos.entity.DTO.RotinaResponseDTO;
 import com.Ginasio.Treinos.entity.RotinaTreino;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,23 +16,22 @@ public class RotinaTreinoController {
     private final RotinaTreinoService rotinaTreinoService;
 
     @PostMapping("/criarRotina")
-    public ResponseEntity<RotinaTreino> criarRotina(@RequestBody RotinaTreino rotina){
+    public ResponseEntity<RotinaResponseDTO> criarRotina(@RequestBody RotinaRequestDTO requestDTO){
 
-        RotinaTreino novaRotina = rotinaTreinoService.criarRotina(rotina);
-        return ResponseEntity.ok(novaRotina);
+        RotinaResponseDTO responseDTO = rotinaTreinoService.criarRotina(requestDTO);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/buscarRotina/{id}")
-    public ResponseEntity<RotinaTreino> buscarRotina(@PathVariable Long id){
+    public ResponseEntity<RotinaResponseDTO> buscarRotina(@PathVariable Long id){
 
-        RotinaTreino achado = rotinaTreinoService.buscarRotina(id);
-        return ResponseEntity.ok(achado);
+        RotinaResponseDTO rotinaResponseDTO = rotinaTreinoService.buscarRotina(id);
+        return ResponseEntity.ok(rotinaResponseDTO);
     }
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<Void> actualizarRotina(@PathVariable Long id, @RequestBody RotinaTreino novaRotina){
+    public ResponseEntity<Void> actualizarRotina(@PathVariable Long id, @RequestBody RotinaRequestDTO requestDTO){
 
-        RotinaTreino actual = rotinaTreinoService.buscarRotina(id);
-        RotinaTreino nova = rotinaTreinoService.actualizarRotina(id, novaRotina);
+        rotinaTreinoService.actualizarRotina(id, requestDTO);
         return ResponseEntity.ok().build();
     }
 }

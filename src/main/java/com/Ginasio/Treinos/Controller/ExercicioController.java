@@ -2,6 +2,8 @@ package com.Ginasio.Treinos.Controller;
 
 
 import com.Ginasio.Treinos.Service.ExercicioService;
+import com.Ginasio.Treinos.entity.DTO.ExercicioRequestDTO;
+import com.Ginasio.Treinos.entity.DTO.ExercicioResponseDTO;
 import com.Ginasio.Treinos.entity.Exercicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,22 +16,22 @@ public class ExercicioController {
     private final ExercicioService exercicioService;
 
     @PostMapping("/criarExercicio")
-    public ResponseEntity<Exercicio> criar(@RequestBody Exercicio exercicio){
+    public ResponseEntity<ExercicioResponseDTO> criar(@RequestBody ExercicioRequestDTO requestDTO){
 
-        Exercicio saved = exercicioService.criarExercicio(exercicio);
-        return  ResponseEntity.ok(saved);
+        ExercicioResponseDTO responseDTO = exercicioService.criarExercicio(requestDTO);
+        return  ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<Exercicio> buscarExercicio(@PathVariable Long id){
-        Exercicio achado = exercicioService.buscarExercicio(id);
-        return ResponseEntity.ok(achado);
+    public ResponseEntity<ExercicioResponseDTO> buscarExercicio(@PathVariable Long id){
+        ExercicioResponseDTO responseDTO = exercicioService.buscarExercicio(id);
+        return ResponseEntity.ok(responseDTO);
 
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<Void> actualizar(@PathVariable Long id, @RequestBody Exercicio exercicioNovo){
-        exercicioService.actualizar(id, exercicioNovo);
+    public ResponseEntity<Void> actualizar(@PathVariable Long id, @RequestBody ExercicioRequestDTO requestDTO){
+        exercicioService.actualizar(id, requestDTO);
         return ResponseEntity.ok().build();
 
     }

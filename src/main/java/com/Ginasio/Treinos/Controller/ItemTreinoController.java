@@ -1,6 +1,8 @@
 package com.Ginasio.Treinos.Controller;
 
 import com.Ginasio.Treinos.Service.ItemTreinoService;
+import com.Ginasio.Treinos.entity.DTO.ItemRequestDTO;
+import com.Ginasio.Treinos.entity.DTO.ItemResponseDTO;
 import com.Ginasio.Treinos.entity.ItemTreino;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,25 +17,26 @@ public class ItemTreinoController {
 
 
     @PostMapping("/criarItem")
-    public ResponseEntity<ItemTreino> criarItem(@RequestBody ItemTreino itemTreino){
+    public ResponseEntity<ItemResponseDTO> criarItem(@RequestBody ItemRequestDTO requestDTO){
 
-        ItemTreino novo = itemTreinoService.criarItem(itemTreino);
 
-        return ResponseEntity.ok(novo);
+       ItemResponseDTO responseDTO= itemTreinoService.criarItem(requestDTO);
+
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/buscar/{id}")
-    public ResponseEntity<ItemTreino> buscarItem(@PathVariable Long id){
+    public ResponseEntity<ItemResponseDTO> buscarItem(@PathVariable Long id){
 
-        ItemTreino achado = itemTreinoService.buscarItem(id);
-        return  ResponseEntity.ok(achado);
+        ItemResponseDTO responseDTO = itemTreinoService.buscarItem(id);
+        return  ResponseEntity.ok(responseDTO);
     }
 
 
     @PutMapping("actulizar/{i}")
-    public ResponseEntity<Void> actualizar(@PathVariable Long id, @RequestBody ItemTreino novosItens ){
+    public ResponseEntity<Void> actualizar(@PathVariable Long id, @RequestBody ItemRequestDTO requestDTO ){
 
-        itemTreinoService.actualizar(id, novosItens);
+        itemTreinoService.actualizar(id, requestDTO);
 
         return  ResponseEntity.ok().build();
 
