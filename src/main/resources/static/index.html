@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ginásio Treinos — Entrar</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-page">
+    <div class="login-card">
+        <div class="brand">
+            <div class="brand-logo">GT</div>
+            <h1>Ginásio Treinos</h1>
+        </div>
+        <p class="sub">Entre com a sua conta para continuar.</p>
+
+        <div id="erro" class="alert alert-error hidden"></div>
+
+        <form id="form-login">
+            <div class="field">
+                <label for="username">Utilizador ou email</label>
+                <input id="username" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-block" type="submit" id="btn-entrar">Entrar</button>
+        </form>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    // Se já tem sessão válida, vai directo para a sua página
+    const sessao = lerToken();
+    if (sessao) window.location.href = paginaInicial(sessao.tipo);
+
+    const form = document.getElementById('form-login');
+    const erro = document.getElementById('erro');
+    const botao = document.getElementById('btn-entrar');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        erro.classList.add('hidden');
+        botao.disabled = true;
+        botao.textContent = 'A entrar...';
+
+        try {
+            const resposta = await api('/api/auth/login', {
+                method: 'POST',
+                body: { username: form.username.value.trim(), password: form.password.value }
+            });
+            setToken(resposta.token);
+            window.location.href = paginaInicial(lerToken().tipo);
+        } catch (err) {
+            erro.textContent = err.message;
+            erro.classList.remove('hidden');
+            botao.disabled = false;
+            botao.textContent = 'Entrar';
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,45 +1,42 @@
 package com.Ginasio.Treinos.Controller;
 
-
 import com.Ginasio.Treinos.Service.ExercicioService;
 import com.Ginasio.Treinos.entity.DTO.ExercicioRequestDTO;
 import com.Ginasio.Treinos.entity.DTO.ExercicioResponseDTO;
-import com.Ginasio.Treinos.entity.Exercicio;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/exercicio")
-@RequiredArgsConstructor
+@RequestMapping("/api/exercicios")
 public class ExercicioController {
-    private final ExercicioService exercicioService;
 
-    @PostMapping("/criarExercicio")
-    public ResponseEntity<ExercicioResponseDTO> criar(@RequestBody ExercicioRequestDTO requestDTO){
+    @Autowired
+    private ExercicioService exercicioService;
 
-        ExercicioResponseDTO responseDTO = exercicioService.criarExercicio(requestDTO);
-        return  ResponseEntity.ok(responseDTO);
+    @PostMapping
+    public ResponseEntity<ExercicioResponseDTO> create(@RequestBody ExercicioRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(exercicioService.create(dto));
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<ExercicioResponseDTO> buscarExercicio(@PathVariable Long id){
-        ExercicioResponseDTO responseDTO = exercicioService.buscarExercicio(id);
-        return ResponseEntity.ok(responseDTO);
-
+    @GetMapping
+    public ResponseEntity<Page<ExercicioResponseDTO>> list(@PageableDefault(size = 50) Pageable pageable) {
+        return ResponseEntity.ok(exercicioService.list(pageable));
     }
 
-    @PutMapping("/actualizar/{id}")
-    public ResponseEntity<Void> actualizar(@PathVariable Long id, @RequestBody ExercicioRequestDTO requestDTO){
-        exercicioService.actualizar(id, requestDTO);
-        return ResponseEntity.ok().build();
-
-    }
-
-    @DeleteMapping("/apagar/{id}")
-    public ResponseEntity<Void> apagar(@PathVariable Long id){
-        exercicioService.apagar(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody ExercicioRequestDTO dto) {
+        exercicioService.updtate(id, dto);
         return ResponseEntity.noContent().build();
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        exercicioService.changeState(id);
+        return ResponseEntity.noContent().build();
     }
 }

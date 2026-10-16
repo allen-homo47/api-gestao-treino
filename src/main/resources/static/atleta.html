@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ginásio Treinos — Os meus treinos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">GT</div>
+            <h1>Ginásio Treinos</h1>
+        </div>
+        <nav class="nav" id="nav">
+            <button data-vista="treinos" class="active">Os meus treinos</button>
+            <button data-vista="perfil">O meu perfil</button>
+            <button data-vista="password">Mudar password</button>
+        </nav>
+        <div class="sidebar-footer">
+            <div>
+                <div class="user" id="user-nome"></div>
+                <div class="role">Atleta</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- Treinos -->
+        <section id="vista-treinos">
+            <div class="page-header">
+                <div>
+                    <h2>Os meus treinos</h2>
+                    <p>Os planos de treino preparados para si.</p>
+                </div>
+            </div>
+            <div class="stats" id="stats"></div>
+            <div id="planos"><div class="card empty">A carregar...</div></div>
+        </section>
+
+        <!-- Perfil -->
+        <section id="vista-perfil" class="hidden">
+            <div class="page-header">
+                <div>
+                    <h2>O meu perfil</h2>
+                    <p>Para alterar estes dados, fale com o seu treinador.</p>
+                </div>
+            </div>
+            <div class="card"><div class="card-body"><div class="info-list" id="perfil"></div></div></div>
+        </section>
+
+        <!-- Password -->
+        <section id="vista-password" class="hidden">
+            <div class="page-header">
+                <div>
+                    <h2>Mudar password</h2>
+                    <p>Se ainda usa a password inicial, recomendamos que a altere.</p>
+                </div>
+            </div>
+            <div class="card" style="max-width: 460px">
+                <div class="card-body">
+                    <div id="pw-msg" class="alert hidden"></div>
+                    <form id="form-password">
+                        <div class="field">
+                            <label for="passwordActual">Password actual</label>
+                            <input id="passwordActual" type="password" autocomplete="current-password" required>
+                        </div>
+                        <div class="field">
+                            <label for="novaPassword">Nova password</label>
+                            <input id="novaPassword" type="password" autocomplete="new-password" minlength="6" required>
+                            <span class="hint">Mínimo de 6 caracteres.</span>
+                        </div>
+                        <div class="field">
+                            <label for="confirmar">Confirmar nova password</label>
+                            <input id="confirmar" type="password" autocomplete="new-password" minlength="6" required>
+                        </div>
+                        <button class="btn" type="submit">Guardar nova password</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/atleta.js"></script>
+</body>
+</html>

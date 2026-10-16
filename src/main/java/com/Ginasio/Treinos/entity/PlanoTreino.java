@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name= "plano_treino")
@@ -24,6 +25,15 @@ public class PlanoTreino {
     private LocalDate dataFim;
 
     @ManyToOne
-    @JoinColumn(name= "atleta_id" , nullable= false)
+    @JoinColumn(name = "atleta_id")
     private Atleta atleta;
+
+    @ManyToOne
+    @JoinColumn(name = "treinador_id")
+    private Treinador treinador;
+
+    // MappedBy corrigido para o atributo em RotinaTreino
+    @OneToMany(mappedBy = "planoTreino", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RotinaTreino> rotinaTreino;
+
 }

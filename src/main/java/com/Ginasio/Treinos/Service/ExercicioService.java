@@ -1,53 +1,55 @@
 package com.Ginasio.Treinos.Service;
 
+import com.Ginasio.Treinos.Interface.BaseInterface;
 import com.Ginasio.Treinos.Repository.ExercicioRepository;
 import com.Ginasio.Treinos.entity.DTO.ExercicioRequestDTO;
 import com.Ginasio.Treinos.entity.DTO.ExercicioResponseDTO;
 import com.Ginasio.Treinos.entity.Exercicio;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-public class ExercicioService {
-    private final ExercicioRepository exercicioRepository;
+public class ExercicioService implements BaseInterface<ExercicioRequestDTO, ExercicioResponseDTO> {
 
-    public ExercicioResponseDTO criarExercicio(ExercicioRequestDTO requestDTO){
+    @Autowired
+    private ExercicioRepository exercicioRepository;
 
-        Exercicio exercicio = new Exercicio();
-        exercicio.setNomeExercicio(requestDTO.nomeExercicio());
-        exercicio.setGrupoMuscular(requestDTO.grupoMuscular());
-        exercicio.setUrlVideoDemonstrativo(requestDTO.urlVideoDemonstrativo());
-        exercicioRepository.save(exercicio);
+    @Override
+    @Transactional
+    public ExercicioResponseDTO create(ExercicioRequestDTO dto) {
+        Exercicio ex = new Exercicio();
+        ex.setNomeExercicio(dto.nomeExercicio());
+        ex.setGrupoMuscular(dto.grupoMuscular());
+        ex.setUrlVideoDemonstrativo(dto.urlVideoDemonstrativo());
 
-
-        ExercicioResponseDTO responseDTO = new ExercicioResponseDTO(exercicio.getId(), exercicio.getNomeExercicio(), exercicio.getGrupoMuscular(), exercicio.getUrlVideoDemonstrativo());
-        return responseDTO;
+        Exercicio salvo = exercicioRepository.save(ex);
+        return new ExercicioResponseDTO(salvo.getId(), salvo.getNomeExercicio(), salvo.getGrupoMuscular(), salvo.getUrlVideoDemonstrativo());
     }
 
-    public ExercicioResponseDTO buscarExercicio(Long id){
+    @Override
+    @Transactional
+    public void updtate(Long id, ExercicioRequestDTO dto) {
+        Exercicio ex = exercicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Exercício não encontrado: " + id));
 
-        Exercicio exercicio =   exercicioRepository.findById(id).orElseThrow(()-> new RuntimeException("Exercicio nao encontrado"));
-
-
-
-        ExercicioResponseDTO responseDTO = new ExercicioResponseDTO(exercicio.getId(), exercicio.getNomeExercicio(), exercicio.getGrupoMuscular(), exercicio.getUrlVideoDemonstrativo());
-        return responseDTO;
+        ex.setNomeExercicio(dto.nomeExercicio());
+        ex.setGrupoMuscular(dto.grupoMuscular());
+        ex.setUrlVideoDemonstrativo(dto.urlVideoDemonstrativo());
+        exercicioRepository.save(ex);
     }
 
-    public void actualizar(Long id, ExercicioRequestDTO requestDTO){
-
-        Exercicio actual = exercicioRepository.findById(id).orElseThrow(()-> new RuntimeException("Exercicio nao encontrado"));
-        actual.setNomeExercicio(requestDTO.nomeExercicio());
-        actual.setGrupoMuscular(requestDTO.grupoMuscular());
-        actual.setUrlVideoDemonstrativo(requestDTO.urlVideoDemonstrativo());
-        exercicioRepository.save(actual);
+    @Override
+    @Transactional
+    public void changeState(Long id) {
+        exercicioRepository.deleteById(id);
     }
 
-   public void apagar(Long id){
-
-
-       Exercicio actual = exercicioRepository.findById(id).orElseThrow(()-> new RuntimeException("Exercicio nao encontrado"));
-       exercicioRepository.delete(actual);
-   }
+    @Override
+    public Page<ExercicioResponseDTO> list(Pageable pg) {
+        return exercicioRepository.findAll(pg)
+                .map(e -> new ExercicioResponseDTO(e.getId(), e.getNomeExercicio(), e.getGrupoMuscular(), e.getUrlVideoDemonstrativo()));
+    }
 }

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "exercicios")
 @Getter
@@ -22,8 +24,8 @@ public class Exercicio {
     private String grupoMuscular;
     private String urlVideoDemonstrativo;
 
-    @ManyToOne
-    @JoinColumn(name ="rotina_treino_id", nullable = false)
-    private RotinaTreino rotinaTreino;
+    // Removido o @ManyToOne com RotinaTreino. Opcional:
+    @OneToMany(mappedBy = "exercicio")
+    private List<ItemTreino> itensTreino;
 
 }

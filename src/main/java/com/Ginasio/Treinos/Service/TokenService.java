@@ -1,5 +1,4 @@
 package com.Ginasio.Treinos.Service;
-
 import com.Ginasio.Treinos.entity.Usuario;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -15,42 +14,39 @@ import java.time.ZoneOffset;
 @Service
 public class TokenService {
 
-    private static final String ISSUER = "ginasio-treinos-api";
-
-    @Value("${api.security.token.secret:chave-secreta-do-ginasio-123}")
+    @Value("${api.security.token.secret:123456789minhasecretsegura}")
     private String secret;
 
     public String gerarToken(Usuario usuario) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
+            var algoritmo = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer(ISSUER)
+                    .withIssuer("API Ginasio Treinos")
                     .withSubject(usuario.getUsername())
-                    .withExpiresAt(gerarDataExpiracao())
-                    .sign(algorithm);
+                    .withClaim("id", usuario.getId())
+                    .withClaim("tipo", usuario.getTipoUser() != null ? usuario.getTipoUser().name() : "")
+                    .withExpiresAt(dataExpiracao())
+                    .sign(algoritmo);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token JWT", exception);
         }
     }
 
-    public String validarToken(String tokenJWT) {
+    public String getSubject(String tokenJWT) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
-                    .withIssuer(ISSUER)
+            var algoritmo = Algorithm.HMAC256(secret);
+            return JWT.require(algoritmo)
+                    .withIssuer("API Ginasio Treinos")
                     .build()
                     .verify(tokenJWT)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            return "";
+            // Token inválido ou expirado
+            return null;
         }
     }
 
-    public String getSubject(String tokenJWT) {
-        return validarToken(tokenJWT);
-    }
-
-    private Instant gerarDataExpiracao() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("+02:00"));
+    private Instant dataExpiracao() {
+        return LocalDateTime.now().plusHours(24).toInstant(ZoneOffset.of("+02:00"));
     }
 }

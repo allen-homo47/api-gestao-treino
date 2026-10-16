@@ -2,7 +2,11 @@ package com.Ginasio.Treinos.entity;
 
 import com.Ginasio.Treinos.entity.Enum.TipoUser;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,14 +14,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Entity
-@Table(name = "usuario") // Tabela no plural para coincidir com o phpMyAdmin
+@Table(name = "usuario")
+@Entity(name = "Usuario")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo_usuario_disc", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("USUARIO")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-@Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario implements UserDetails {
 
     @Id
@@ -25,6 +31,8 @@ public class Usuario implements UserDetails {
     private Long id;
 
     private String nome;
+
+    @Column(unique = true, nullable = false)
     private String username;
     private String password;
 
@@ -32,40 +40,34 @@ public class Usuario implements UserDetails {
     private TipoUser tipoUser;
 
     // --- Métodos obrigatórios da interface UserDetails ---
+    // getUsername() e getPassword() são gerados pelo Lombok
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Define a role/permissão padrão do utilizador
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
-    }
-
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.username;
+        if (tipoUser == null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+        return List.of(new SimpleGrantedAuthority("ROLE_" + tipoUser.name()));
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Garante que a conta não está expirada
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Garante que a conta não está bloqueada
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Garante que as credenciais não estão expiradas
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true; // Garante que o utilizador está ativo
+        return true;
     }
+
 }

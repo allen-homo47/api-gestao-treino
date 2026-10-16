@@ -1,4 +1,4 @@
 package com.Ginasio.Treinos.entity.DTO;
 
-public record RotinaResponseDTO(Long id, String nome,String diaSemana) {
+public record RotinaResponseDTO(Long id, String nome, String diaSemana, Long planoId, String planoNome) {
 }

@@ -21,31 +21,22 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private UsuarioRepository repository;
+    private UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        var path = request.getRequestURI();
-
-        // Pula o filtro se for a rota de autenticação pública
-        if (path.contains("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         var tokenJWT = recuperarToken(request);
 
         if (tokenJWT != null) {
-            var subject = tokenService.validarToken(tokenJWT);
-            if (subject != null && !subject.isEmpty()) {
-                var usuario = repository.findByUsername(subject);
+            var subject = tokenService.getSubject(tokenJWT);
+            var usuario = subject != null ? usuarioRepository.findByUsername(subject) : null;
 
-                if (usuario != null) {
-                    var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
+            // Token inválido/expirado: segue sem autenticação (rotas protegidas devolvem 401/403)
+            if (usuario != null) {
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 
@@ -54,8 +45,8 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private String recuperarToken(HttpServletRequest request) {
         var authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null) {
-            return authorizationHeader.replace("Bearer ", "").trim();
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.replace("Bearer ", "");
         }
         return null;
     }

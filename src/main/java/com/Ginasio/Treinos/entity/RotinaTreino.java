@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name= "rotina_treino")
 @Getter
@@ -21,8 +23,11 @@ public class RotinaTreino {
 
     private String nome;
     private String diaSemana;
-
     @ManyToOne
-    @JoinColumn(name = "plano_treino_id" , nullable= false)
+    @JoinColumn(name = "plano_treino_id")
     private PlanoTreino planoTreino;
+
+    // MappedBy corrigido para o atributo em ItemTreino
+    @OneToMany(mappedBy = "rotinaTreino", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemTreino> itemTreino;
 }

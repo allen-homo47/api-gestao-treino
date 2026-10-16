@@ -1,44 +1,47 @@
 package com.Ginasio.Treinos.Controller;
 
 import com.Ginasio.Treinos.Service.AtletaService;
-import com.Ginasio.Treinos.entity.Atleta;
 import com.Ginasio.Treinos.entity.DTO.AtletaRequestDTO;
 import com.Ginasio.Treinos.entity.DTO.AtletaResponseDTO;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/atletas")
-@RequiredArgsConstructor
+@RequestMapping("/api/atletas")
 public class AtletaController {
 
-    private final AtletaService atletaService;
+    @Autowired
+    private AtletaService atletaService;
 
-    @PostMapping("/ciarAtleta")
-    public ResponseEntity<AtletaResponseDTO> criarAlteta(@RequestBody AtletaRequestDTO atletaDTO){
-
-       AtletaResponseDTO saved = atletaService.criarAtleta(atletaDTO);
-        return ResponseEntity.ok(saved);
+    @PostMapping
+    public ResponseEntity<AtletaResponseDTO> create(@RequestBody AtletaRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(atletaService.create(dto));
     }
 
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<AtletaResponseDTO> buscarAtleta(@PathVariable Long id){
-        AtletaResponseDTO achado = atletaService.buscarAtleta(id);
-        return ResponseEntity.ok(achado);
-
+    @GetMapping
+    public ResponseEntity<Page<AtletaResponseDTO>> list(@PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(atletaService.list(pageable));
     }
 
-    @PutMapping("/actualizar")
-    public ResponseEntity<Void> ActualizarDados(@PathVariable Long id, @RequestBody AtletaRequestDTO novosDados){
-
-
-        AtletaResponseDTO achado = atletaService.buscarAtleta(id);
-        atletaService.actualizarDados(id, novosDados);
-
-        return ResponseEntity.ok().build();
+    @GetMapping("/{id}")
+    public ResponseEntity<AtletaResponseDTO> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(atletaService.findById(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody AtletaRequestDTO dto) {
+        atletaService.updtate(id, dto);
+        return ResponseEntity.noContent().build();
+    }
 
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        atletaService.changeState(id);
+        return ResponseEntity.noContent().build();
+    }
 }

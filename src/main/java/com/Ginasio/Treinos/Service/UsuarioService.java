@@ -6,6 +6,7 @@ import com.Ginasio.Treinos.entity.DTO.UsuarioRequestPasswordDTO;
 import com.Ginasio.Treinos.entity.DTO.UsuarioResponseDTO;
 import com.Ginasio.Treinos.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,20 +16,19 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public UsuarioResponseDTO salvarUsuarios(UsuarioRequestDTO usuarioRequestDTO){
 
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioRequestDTO.nome());
         usuario.setUsername(usuarioRequestDTO.username());
-        usuario.setPassword(usuarioRequestDTO.password());
+        usuario.setPassword(passwordEncoder.encode(usuarioRequestDTO.password()));
         usuario.setTipoUser(usuarioRequestDTO.tipoUser());
 
-
-         usuarioRepository.save(usuario);
-        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(usuario.getId(), usuario.getNome(),  usuario.getTipoUser());
-        return responseDTO;
-
-
+        usuarioRepository.save(usuario);
+        return new UsuarioResponseDTO(usuario.getId(), usuario.getUsername(), usuario.getTipoUser());
     }
 
     public List<UsuarioResponseDTO> listarUsuarios(){
@@ -60,8 +60,13 @@ public class UsuarioService {
         Usuario usuarioActual =usuarioRepository.findById(id).orElseThrow(()-> new RuntimeException("Usuario nao encontrado"));
 
         usuarioActual.setNome(usuarioRequestDTO.nome());
-        usuarioActual.setPassword(usuarioRequestDTO.password());
+        usuarioActual.setUsername(usuarioRequestDTO.username());
         usuarioActual.setTipoUser(usuarioRequestDTO.tipoUser());
+        // A password só é alterada se vier preenchida
+        if (usuarioRequestDTO.password() != null && !usuarioRequestDTO.password().isBlank()) {
+            usuarioActual.setPassword(passwordEncoder.encode(usuarioRequestDTO.password()));
+        }
+
         usuarioRepository.save(usuarioActual);
 
 
@@ -75,8 +80,8 @@ public class UsuarioService {
 
         Usuario usuario = usuarioRepository.findById(passwordDTO.id()).orElseThrow(()-> new RuntimeException("Usuario nao encontrado"));
 
+        usuario.setPassword(passwordEncoder.encode(passwordDTO.password()));
 
-        usuario.setPassword(passwordDTO.password());
         usuarioRepository.save(usuario);
 
 

@@ -68,7 +68,7 @@ public class UsuarioController {
 
     }
     @PatchMapping("/mudarSenha")
-    public ResponseEntity<Void> mudarSenha(UsuarioRequestPasswordDTO novoPassword){
+    public ResponseEntity<Void> mudarSenha(@RequestBody UsuarioRequestPasswordDTO novoPassword){
 
         usuarioService.mudarPassword(novoPassword);
         return  ResponseEntity.ok().build();

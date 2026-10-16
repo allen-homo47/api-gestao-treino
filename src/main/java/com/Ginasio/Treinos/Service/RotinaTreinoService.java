@@ -1,47 +1,73 @@
 package com.Ginasio.Treinos.Service;
 
-
+import com.Ginasio.Treinos.Interface.BaseInterface;
+import com.Ginasio.Treinos.Repository.PlanotreinoRepository;
 import com.Ginasio.Treinos.Repository.RotinaTreinoRepository;
 import com.Ginasio.Treinos.entity.DTO.RotinaRequestDTO;
 import com.Ginasio.Treinos.entity.DTO.RotinaResponseDTO;
+import com.Ginasio.Treinos.entity.PlanoTreino;
 import com.Ginasio.Treinos.entity.RotinaTreino;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-public class RotinaTreinoService {
+public class RotinaTreinoService implements BaseInterface<RotinaRequestDTO, RotinaResponseDTO> {
 
-    private final RotinaTreinoRepository rotinaTreinoRepository;
+    @Autowired
+    private RotinaTreinoRepository rotinaTreinoRepository;
 
-    public RotinaResponseDTO criarRotina(RotinaRequestDTO rotinaRequest){
+    @Autowired
+    private PlanotreinoRepository planotreinoRepository;
 
+    @Override
+    @Transactional
+    public RotinaResponseDTO create(RotinaRequestDTO dto) {
         RotinaTreino rotina = new RotinaTreino();
-        rotina.setNome(rotinaRequest.nome());
-        rotina.setDiaSemana(rotinaRequest.diaSemana());
+        preencher(rotina, dto);
 
+        RotinaTreino salva = rotinaTreinoRepository.save(rotina);
+        return toResponse(salva);
+    }
+
+    @Override
+    @Transactional
+    public void updtate(Long id, RotinaRequestDTO dto) {
+        RotinaTreino rotina = rotinaTreinoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rotina não encontrada: " + id));
+
+        preencher(rotina, dto);
         rotinaTreinoRepository.save(rotina);
-
-        RotinaResponseDTO rotinaResponse = new RotinaResponseDTO(rotina.getId(), rotina.getNome(), rotina.getDiaSemana());
-        return rotinaResponse;
-
     }
 
-    public RotinaResponseDTO buscarRotina(Long id){
-
-        RotinaTreino rotina = rotinaTreinoRepository.findById(id).orElseThrow(()-> new RuntimeException("Rotina nao encontrada"));
-        RotinaResponseDTO responseDTO = new RotinaResponseDTO(rotina.getId(), rotina.getNome(), rotina.getDiaSemana());
-        return  responseDTO;
+    @Override
+    @Transactional
+    public void changeState(Long id) {
+        rotinaTreinoRepository.deleteById(id);
     }
 
-    public void actualizarRotina(Long id, RotinaRequestDTO requestDTO){
+    @Override
+    public Page<RotinaResponseDTO> list(Pageable pg) {
+        return rotinaTreinoRepository.findAll(pg).map(this::toResponse);
+    }
 
-        RotinaTreino actual = rotinaTreinoRepository.findById(id).orElseThrow(()-> new RuntimeException("Rotina nao encontrada"));
-        actual.setNome(requestDTO.nome());;
-        actual.setDiaSemana(requestDTO.diaSemana());
+    private void preencher(RotinaTreino rotina, RotinaRequestDTO dto) {
+        rotina.setNome(dto.nome());
+        rotina.setDiaSemana(dto.diaSemana());
 
-        rotinaTreinoRepository.save(actual);
+        PlanoTreino plano = null;
+        if (dto.planoId() != null) {
+            plano = planotreinoRepository.findById(dto.planoId())
+                    .orElseThrow(() -> new RuntimeException("Plano não encontrado: " + dto.planoId()));
+        }
+        rotina.setPlanoTreino(plano);
+    }
 
-
+    private RotinaResponseDTO toResponse(RotinaTreino r) {
+        PlanoTreino p = r.getPlanoTreino();
+        return new RotinaResponseDTO(r.getId(), r.getNome(), r.getDiaSemana(),
+                p != null ? p.getId() : null, p != null ? p.getNomePlano() : null);
     }
 }

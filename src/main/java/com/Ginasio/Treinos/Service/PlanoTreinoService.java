@@ -1,50 +1,74 @@
 package com.Ginasio.Treinos.Service;
 
+import com.Ginasio.Treinos.Interface.BaseInterface;
+import com.Ginasio.Treinos.Repository.AtletaRepository;
 import com.Ginasio.Treinos.Repository.PlanotreinoRepository;
+import com.Ginasio.Treinos.entity.Atleta;
 import com.Ginasio.Treinos.entity.DTO.PlanoTreinoRequestDTO;
 import com.Ginasio.Treinos.entity.DTO.PlanoTreinoresponseDTO;
 import com.Ginasio.Treinos.entity.PlanoTreino;
-import com.Ginasio.Treinos.entity.Usuario;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-public class PlanoTreinoService {
+public class PlanoTreinoService implements BaseInterface<PlanoTreinoRequestDTO, PlanoTreinoresponseDTO> {
 
-    private final PlanotreinoRepository planotreinoRepository;
+    @Autowired
+    private PlanotreinoRepository planotreinoRepository;
 
-    public PlanoTreinoresponseDTO criarPlano(PlanoTreinoRequestDTO requestDTO){
+    @Autowired
+    private AtletaRepository atletaRepository;
+
+    @Override
+    @Transactional
+    public PlanoTreinoresponseDTO create(PlanoTreinoRequestDTO dto) {
         PlanoTreino plano = new PlanoTreino();
-        plano.setNomePlano(requestDTO.nome());
-        plano.setDataInicio(requestDTO.dataInicio());
-        plano.setDataFim(requestDTO.dataFim());
+        preencher(plano, dto);
+
+        PlanoTreino salvo = planotreinoRepository.save(plano);
+        return toResponse(salvo);
+    }
+
+    @Override
+    @Transactional
+    public void updtate(Long id, PlanoTreinoRequestDTO dto) {
+        PlanoTreino plano = planotreinoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plano não encontrado: " + id));
+
+        preencher(plano, dto);
         planotreinoRepository.save(plano);
-
-        PlanoTreinoresponseDTO responseDTo = new PlanoTreinoresponseDTO(plano.getId(), plano.getNomePlano(), plano.getDataInicio(), plano.getDataFim());
-
-        return responseDTo;
     }
 
-    public PlanoTreinoresponseDTO buscarPlano(Long id){
-
-        PlanoTreino plano = planotreinoRepository.findById(id).orElseThrow(()->new RuntimeException("Plano nao encontrado"));
-
-        PlanoTreinoresponseDTO responseDTO = new PlanoTreinoresponseDTO(plano.getId(), plano.getNomePlano(), plano.getDataInicio(), plano.getDataFim());
-        return responseDTO;
+    @Override
+    @Transactional
+    public void changeState(Long id) {
+        planotreinoRepository.deleteById(id);
     }
 
-    public void actualizarPlano(Long id, PlanoTreinoRequestDTO planoRequest){
+    @Override
+    public Page<PlanoTreinoresponseDTO> list(Pageable pg) {
+        return planotreinoRepository.findAll(pg).map(this::toResponse);
+    }
 
-        PlanoTreino actual = planotreinoRepository.findById(id).orElseThrow(()->new RuntimeException("plano nao encontrado"));
-        actual.setNomePlano(planoRequest.nome());
-        actual.setDataInicio(planoRequest.dataInicio());
-        actual.setDataFim(planoRequest.dataFim());
+    private void preencher(PlanoTreino plano, PlanoTreinoRequestDTO dto) {
+        plano.setNomePlano(dto.nome());
+        plano.setDataInicio(dto.dataInicio());
+        plano.setDataFim(dto.dataFim());
 
-        planotreinoRepository.save(actual);
+        Atleta atleta = null;
+        if (dto.atletaId() != null) {
+            atleta = atletaRepository.findById(dto.atletaId())
+                    .orElseThrow(() -> new RuntimeException("Atleta não encontrado com id: " + dto.atletaId()));
+        }
+        plano.setAtleta(atleta);
+    }
 
-
-
-
+    private PlanoTreinoresponseDTO toResponse(PlanoTreino p) {
+        Atleta a = p.getAtleta();
+        return new PlanoTreinoresponseDTO(p.getId(), p.getNomePlano(), p.getDataInicio(), p.getDataFim(),
+                a != null ? a.getId() : null, a != null ? a.getNome() : null);
     }
 }

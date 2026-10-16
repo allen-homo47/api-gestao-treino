@@ -7,31 +7,35 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.util.Date;
+import java.util.List;
 
-@Entity
-@Table(name ="atleta")
+@Entity(name = "Atleta")
+@DiscriminatorValue("atleta") // Manteve exatamente igual ao valor 'Atleta' gravado no UPDATE do banco
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Atleta extends Usuario{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Atleta extends Usuario {
 
-
-
-
-    private String objectivo;
+    private String contacto;
     private Double peso;
     private Double altura;
-    private Genero genero;
-    private String contacto;
-    private String email;
-    private String pais;
+    private String dataNascimento;
     private String cidade;
-    private String dataNasimento;
+    private String pais;
+    private String objectivo;
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    private Genero genero;
+
+
+    @ManyToOne
+    @JoinColumn(name = "treinador_id")
+    private Treinador treinador;
+
+
+    @OneToMany(mappedBy = "atleta")
+    private List<PlanoTreino> planoTreino;
 
 }

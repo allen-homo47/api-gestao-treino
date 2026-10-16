@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ginásio Treinos — Gestão</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">GT</div>
+            <h1>Ginásio Treinos</h1>
+        </div>
+        <nav class="nav" id="nav"></nav>
+        <div class="sidebar-footer">
+            <div>
+                <div class="user" id="user-nome"></div>
+                <div class="role" id="user-tipo"></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <h2 id="titulo"></h2>
+                <p id="descricao"></p>
+            </div>
+            <button class="btn" id="btn-novo">+ Novo</button>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead id="thead"></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="paginacao"></div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal de criar/editar -->
+<div class="modal-backdrop hidden" id="modal">
+    <div class="modal">
+        <form id="form">
+            <div class="modal-header">
+                <h3 id="modal-titulo"></h3>
+                <button type="button" class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="form-erro" class="alert alert-error hidden"></div>
+                <div class="form-grid" id="form-campos"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button type="submit" class="btn" id="btn-guardar">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

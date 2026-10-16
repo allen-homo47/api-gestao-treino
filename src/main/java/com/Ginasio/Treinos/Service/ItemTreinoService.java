@@ -1,49 +1,89 @@
 package com.Ginasio.Treinos.Service;
 
-
+import com.Ginasio.Treinos.Interface.BaseInterface;
+import com.Ginasio.Treinos.Repository.ExercicioRepository;
 import com.Ginasio.Treinos.Repository.ItemTreinoRepository;
+import com.Ginasio.Treinos.Repository.RotinaTreinoRepository;
 import com.Ginasio.Treinos.entity.DTO.ItemRequestDTO;
 import com.Ginasio.Treinos.entity.DTO.ItemResponseDTO;
+import com.Ginasio.Treinos.entity.Exercicio;
 import com.Ginasio.Treinos.entity.ItemTreino;
-import lombok.RequiredArgsConstructor;
+import com.Ginasio.Treinos.entity.RotinaTreino;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
-public class ItemTreinoService {
+public class ItemTreinoService implements BaseInterface<ItemRequestDTO, ItemResponseDTO> {
 
+    @Autowired
+    private ItemTreinoRepository itemTreinoRepository;
 
-    private final ItemTreinoRepository itemTreinoRepository;
+    @Autowired
+    private RotinaTreinoRepository rotinaTreinoRepository;
 
+    @Autowired
+    private ExercicioRepository exercicioRepository;
 
-    public ItemResponseDTO criarItem(ItemRequestDTO requestDTO){
-
+    @Override
+    @Transactional
+    public ItemResponseDTO create(ItemRequestDTO dto) {
         ItemTreino item = new ItemTreino();
-        item.setSeries(requestDTO.series());
-        item.setRepeticoes(requestDTO.repeticoes());
-        item.setCarga(requestDTO.carga());
-        item.setDescanso(requestDTO.descanso());
-         itemTreinoRepository.save(item);
+        preencher(item, dto);
 
-        ItemResponseDTO responseDTO = new ItemResponseDTO(item.getId(), item.getSeries(), item.getRepeticoes(), item.getCarga(), item.getDescanso());
-        return  responseDTO;
+        ItemTreino salvo = itemTreinoRepository.save(item);
+        return toResponse(salvo);
     }
 
-    public  ItemResponseDTO buscarItem(Long id){
-        ItemTreino item= itemTreinoRepository.findById(id).orElseThrow(()-> new RuntimeException("Item nao encontrado"));
+    @Override
+    @Transactional
+    public void updtate(Long id, ItemRequestDTO dto) {
+        ItemTreino item = itemTreinoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Item de treino não encontrado: " + id));
 
-        ItemResponseDTO responseDTO = new ItemResponseDTO(item.getId(), item.getSeries(), item.getRepeticoes(), item.getCarga(), item.getDescanso());
-
-        return responseDTO;
+        preencher(item, dto);
+        itemTreinoRepository.save(item);
     }
 
-    public void actualizar(Long id, ItemRequestDTO requestDTO){
+    @Override
+    @Transactional
+    public void changeState(Long id) {
+        itemTreinoRepository.deleteById(id);
+    }
 
-        ItemTreino actual = itemTreinoRepository.findById(id).orElseThrow(()-> new RuntimeException("Item nao encontrado"));
-        actual.setSeries(requestDTO.series());
-        actual.setRepeticoes(requestDTO.repeticoes());;
-        actual.setCarga(requestDTO.carga());
-        actual.setDescanso(requestDTO.descanso());
-        itemTreinoRepository.save(actual);
+    @Override
+    public Page<ItemResponseDTO> list(Pageable pg) {
+        return itemTreinoRepository.findAll(pg).map(this::toResponse);
+    }
+
+    private void preencher(ItemTreino item, ItemRequestDTO dto) {
+        item.setSeries(dto.series());
+        item.setRepeticoes(dto.repeticoes());
+        item.setCarga(dto.carga());
+        item.setDescanso(dto.descanso());
+
+        RotinaTreino rotina = null;
+        if (dto.rotinaId() != null) {
+            rotina = rotinaTreinoRepository.findById(dto.rotinaId())
+                    .orElseThrow(() -> new RuntimeException("Rotina não encontrada: " + dto.rotinaId()));
+        }
+        item.setRotinaTreino(rotina);
+
+        Exercicio exercicio = null;
+        if (dto.exercicioId() != null) {
+            exercicio = exercicioRepository.findById(dto.exercicioId())
+                    .orElseThrow(() -> new RuntimeException("Exercício não encontrado: " + dto.exercicioId()));
+        }
+        item.setExercicio(exercicio);
+    }
+
+    private ItemResponseDTO toResponse(ItemTreino i) {
+        RotinaTreino r = i.getRotinaTreino();
+        Exercicio e = i.getExercicio();
+        return new ItemResponseDTO(i.getId(), i.getSeries(), i.getRepeticoes(), i.getCarga(), i.getDescanso(),
+                r != null ? r.getId() : null, r != null ? r.getNome() : null,
+                e != null ? e.getId() : null, e != null ? e.getNomeExercicio() : null);
     }
 }

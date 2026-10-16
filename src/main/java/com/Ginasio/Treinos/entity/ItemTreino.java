@@ -22,11 +22,11 @@ public class ItemTreino {
     private Integer descanso;
 
     @ManyToOne
-    @JoinColumn(name = "rotinatreino_id", nullable = false)
+    @JoinColumn(name = "rotinatreino_id")
     private RotinaTreino rotinaTreino;
 
 
     @ManyToOne
-    @JoinColumn(name = "exercicio_id", nullable = false)
+    @JoinColumn(name = "exercicio_id")
     private Exercicio exercicio;
 }
